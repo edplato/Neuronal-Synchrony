@@ -75,7 +75,7 @@
 
     stop: function(options) {
 
-      if (!this.source) {
+      if (!this.source || !this._ready) {
         return this;
       }
 
@@ -90,9 +90,19 @@
 
     pause: function() {
 
+      if (!this._ready) {
+        return this;
+      }
+
+      return this;
+
     },
 
     play: function(options) {
+
+      if (!this._ready) {
+        return this;
+      }
 
       var params = _.defaults(options || {}, {
         time: ctx.currentTime,
@@ -104,7 +114,11 @@
       this.source.connect(ctx.destination);
       this.source.loop = params.loop;
 
-      this.source.start(params.time);
+      if (_.isFunction(this.source.start)) {
+        this.source.start(params.time);
+      } else if (_.isFunction(this.source.noteOn)) {
+        this.source.noteOn(params.time);
+      }
 
       return this;
 
